@@ -9,11 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as checklist from "../checklist.js";
-import type * as events from "../events.js";
-import type * as http from "../http.js";
-import type * as items from "../items.js";
-import type * as members from "../members.js";
+import type * as data from "../data.js";
 
 import type {
   ApiFromModules,
@@ -23,11 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  checklist: typeof checklist;
-  events: typeof events;
-  http: typeof http;
-  items: typeof items;
-  members: typeof members;
+  data: typeof data;
 }>;
 
 /**
