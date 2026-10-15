@@ -1,0 +1,8 @@
+node_modules
+build
+.react-router
+.bootstrap
+.env
+.env.local
+*.log
+.DS_Store

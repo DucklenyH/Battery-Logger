@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #eaf4fb;
+  --foreground: #002a44;
+  --card: #ffffff;
+  --card-foreground: #002a44;
+  --popover: #ffffff;
+  --popover-foreground: #002a44;
+  --primary: #00517e;
+  --primary-foreground: #ffffff;
+  --secondary: #d8ecf8;
+  --secondary-foreground: #002a44;
+  --muted: #dff0fa;
+  --muted-foreground: #315979;
+  --accent: #fbdc0a;
+  --accent-foreground: #002a44;
+  --destructive: #c73d3d;
+  --border: #b6d8ed;
+  --input: #9ecde7;
+  --ring: #0086cb;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #071827;
+  --foreground: #eef8ff;
+  --card: #0d2a40;
+  --card-foreground: #eef8ff;
+  --popover: #102f47;
+  --popover-foreground: #eef8ff;
+  --primary: #0086cb;
+  --primary-foreground: #ffffff;
+  --secondary: #123b56;
+  --secondary-foreground: #eef8ff;
+  --muted: #102f47;
+  --muted-foreground: #b8d2df;
+  --accent: #fbdc0a;
+  --accent-foreground: #002a44;
+  --destructive: #f06a6a;
+  --border: #1c5375;
+  --input: #245c78;
+  --ring: #65c6f7;
+}
+
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body {
+    min-width: 320px;
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+  }
+}
+
+.stats-page .stats-card {
+  background: #ffffff;
+  border-color: #b6d8ed;
+  color: #002a44;
+  box-shadow: 0 10px 24px rgb(0 55 92 / 10%);
+}
+
+.stats-page .stats-card h2,
+.stats-page .stats-card [data-slot="card-title"] {
+  color: #002a44;
+}
+
+.dark .stats-page .stats-card {
+  background: #0d2a40;
+  border-color: #1c5375;
+  color: #eef8ff;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 18%);
+}
+
+.dark .stats-page .stats-card h2,
+.dark .stats-page .stats-card [data-slot="card-title"] {
+  color: #eef8ff;
+}
+
+.dark .stats-page {
+  color: #eef8ff;
+}
+
+.dark .stats-page [class*="dark:bg-[#0b1727]"] {
+  background-color: #101d31 !important;
+}
+
+.dark .stats-page [class*="dark:text-[#fbdc0a]"] {
+  color: #eef8ff !important;
+}
+
+html:not(.dark) .stats-page .stats-card {
+  background: #ffffff;
+  border-color: #b6d8ed;
+  color: #002a44;
+}
+
+html:not(.dark) .stats-page .stats-card h2,
+html:not(.dark) .stats-page .stats-card [data-slot="card-title"] {
+  color: #002a44;
+}
