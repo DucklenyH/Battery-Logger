@@ -4,14 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCompletedMatches, readLocalData, type LocalMatch, type LocalReading } from "../lib/local-data";
+import { getCompletedMatches, type LocalMatch, type LocalReading } from "../lib/local-data";
+import { useAppData } from "../lib/app-data";
 
 export function meta() {
   return [{ title: "Statistics · Battery Logger" }];
 }
 
 export default function Statistics() {
-  const [data] = useState(() => readLocalData());
+  const backend = useAppData();
+  const data = backend.data ?? { batteries: [], events: [], members: [], readings: [] };
   const readings = data.readings;
   const [selectedBatteryId, setSelectedBatteryId] = useState(() => readings[0]?.batteryId ?? "");
   const [deepDiveView, setDeepDiveView] = useState<"ir" | "voltage" | "charge">("ir");

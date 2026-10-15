@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { makeLocalId, readLocalData, writeLocalData } from "../lib/local-data";
+import { makeLocalId } from "../lib/local-data";
+import { useAppData } from "../lib/app-data";
 
 const statuses = ["Good", "Fair", "Bad", "Charge Battery"] as const;
 
@@ -16,13 +17,15 @@ export function meta() {
 }
 
 export default function Logging() {
-  const [loggingData] = useState(() => {
-    const data = readLocalData();
+  const backend = useAppData();
+  const data = backend.data;
+  const loggingData = (() => {
+    if (!data) return { batteries: [], activeEvent: undefined };
     const today = new Date().toISOString().slice(0, 10);
     const activeEvent = data.events.find((event) => event.status === "Active" && event.startDate <= today && event.endDate >= today);
     const batteries = data.batteries.filter((battery) => battery.status === "Active" && (!activeEvent || (activeEvent.type === "Competition" ? battery.kind === "Competition" : battery.kind === "Demo")));
     return { batteries, activeEvent };
-  });
+  })();
   const batteries = loggingData.batteries;
   const activeEvent = loggingData.activeEvent;
   const [battery, setBattery] = useState("");
@@ -42,12 +45,11 @@ export default function Logging() {
       toast.error("Choose a battery and status first");
       return;
     }
-    const data = readLocalData();
+    if (!data) return;
     const numberOrNull = (value: string) => value.trim() ? Number(value) : null;
     const eventReadings = data.readings.filter((reading) => reading.batteryId === selectedBattery.id && reading.eventId === activeEvent?.id);
     const nextMatchNumber = eventReadings.filter((reading) => reading.when === "on").length + 1;
-    writeLocalData({ ...data, readings: [...data.readings, { id: makeLocalId("reading"), batteryId: selectedBattery.id, batteryName: selectedBattery.name, when, status, charge: numberOrNull(charge), v0: numberOrNull(values.v0), v1: numberOrNull(values.v1), v2: numberOrNull(values.v2), ir: numberOrNull(values.ir), notes: values.notes.trim(), recordedAt: new Date().toISOString(), eventId: activeEvent?.id, eventName: activeEvent?.name, matchNumber: nextMatchNumber }] });
-    toast.success("Reading saved locally");
+    void backend.replaceData({ ...data, readings: [...data.readings, { id: makeLocalId("reading"), batteryId: selectedBattery.id, batteryName: selectedBattery.name, when, status, charge: numberOrNull(charge), v0: numberOrNull(values.v0), v1: numberOrNull(values.v1), v2: numberOrNull(values.v2), ir: numberOrNull(values.ir), notes: values.notes.trim(), recordedAt: new Date().toISOString(), eventId: activeEvent?.id, eventName: activeEvent?.name, matchNumber: nextMatchNumber }] }).then(() => toast.success("Reading saved")).catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not save reading"));
     setStatus(""); setCharge(""); setValues({ v0: "", v1: "", v2: "", ir: "", notes: "" });
   }
 
@@ -63,7 +65,7 @@ export default function Logging() {
           <Label htmlFor="battery" className="text-base font-bold text-[#002a44] dark:text-white">Battery</Label>
           <Select value={battery} onValueChange={(value) => {
             const selectedBattery = value ?? "";
-            const previousReadings = readLocalData().readings.filter((reading) => reading.batteryId === selectedBattery);
+            const previousReadings = (data?.readings ?? []).filter((reading) => reading.batteryId === selectedBattery);
             const previousReading = previousReadings[previousReadings.length - 1];
             setBattery(selectedBattery);
             setWhen(previousReading?.when === "off" ? "on" : "off");

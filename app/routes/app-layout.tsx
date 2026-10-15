@@ -2,13 +2,13 @@ import { Navigate, Outlet, useLocation } from "react-router";
 
 import { AppBottomNav } from "../components/app-bottom-nav";
 import { PageHeader } from "../components/page-header";
-import { useUiStore } from "../stores/ui-store";
+import { useAppData } from "../lib/app-data";
 
 export default function AppLayout() {
-  const isSignedIn = useUiStore((state) => state.isSignedIn);
-  const role = useUiStore((state) => state.role);
+  const { isAuthenticated, role, loading } = useAppData();
   const location = useLocation();
-  if (!isSignedIn) return <Navigate to="/" replace />;
+  if (loading) return <div className="grid min-h-svh place-items-center bg-background text-foreground">Loading…</div>;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   if (location.pathname.startsWith("/admin") && role === "Member") return <Navigate to="/logging" replace />;
 
   return (

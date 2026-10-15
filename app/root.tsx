@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import { Toaster } from "@/components/ui/sonner";
+import { AppDataProvider } from "./lib/app-data";
 
 import "./app.css";
 
@@ -48,9 +49,9 @@ export default function Root() {
       disableTransitionOnChange
     >
       {convexClient ? (
-        <ConvexAuthProvider client={convexClient}>{content}</ConvexAuthProvider>
+        <ConvexAuthProvider client={convexClient}><AppDataProvider convexEnabled>{content}</AppDataProvider></ConvexAuthProvider>
       ) : (
-        content
+        <AppDataProvider convexEnabled={false}>{content}</AppDataProvider>
       )}
       <Toaster />
     </ThemeProvider>

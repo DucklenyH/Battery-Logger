@@ -1,6 +1,6 @@
 import { BarChart3, ClipboardPenLine, History as HistoryIcon, Settings2 } from "lucide-react";
 import { NavLink } from "react-router";
-import { useUiStore } from "../stores/ui-store";
+import { useAppData } from "../lib/app-data";
 
 const links = [
   { to: "/logging", label: "Logging", icon: ClipboardPenLine },
@@ -10,7 +10,7 @@ const links = [
 ];
 
 export function AppBottomNav() {
-  const role = useUiStore((state) => state.role);
+  const { role } = useAppData();
   const visibleLinks = role === "Member" ? links.filter((link) => link.to !== "/admin") : links;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#b6d8ed] bg-[#eaf4fb]/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-6px_22px_rgb(0_55_92/0.08)] backdrop-blur dark:border-[#1c5375] dark:bg-[#071827]/95 dark:shadow-[0_-6px_22px_rgb(0_0_0/0.28)]">

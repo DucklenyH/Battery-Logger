@@ -1,63 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUiStore } from "../stores/ui-store";
-import { upsertLocalMember } from "../lib/local-data";
+import { useAppData } from "../lib/app-data";
 
-export function meta() {
-  return [{ title: "Sign in · Battery Logger" }];
-}
-
+export function meta() { return [{ title: "Sign in · Battery Logger" }]; }
 export default function SignIn() {
-  const navigate = useNavigate();
-  const isSignedIn = useUiStore((state) => state.isSignedIn);
-  const signIn = useUiStore((state) => state.signIn);
-  const [firstName, setFirstName] = useState("");
-  const [lastInitial, setLastInitial] = useState("");
-
-  if (isSignedIn) return <Navigate to="/logging" replace />;
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const name = `${firstName.trim()} ${lastInitial.trim().toUpperCase()}`.trim();
-    if (!firstName.trim() || !lastInitial.trim()) return;
-    const member = upsertLocalMember(name);
-    signIn(name, member.role);
-    void navigate("/logging");
-  }
-
-  return (
-    <main className="grid min-h-svh place-items-center bg-[#eaf4fb] px-6 py-10 text-[#002a44]">
-      <Card className="w-full max-w-sm border-2 border-[#b6d8ed] bg-white shadow-[0_18px_50px_rgb(0_55_92/0.12)]">
-        <CardHeader className="items-center gap-4 text-center">
-          <img src="/team-341-logo.png" alt="Team 341 mascot" className="size-20 rounded-2xl object-contain" />
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-black tracking-tight">BATTERY LOGGER</CardTitle>
-            <p className="text-sm text-[#315979]">Sign in to start logging</p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-5" onSubmit={submit}>
-            <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-4">
-              <div className="grid gap-2">
-              <Label htmlFor="first-name">First name</Label>
-              <Input id="first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" autoFocus />
-              </div>
-              <div className="grid gap-2">
-              <Label htmlFor="last-initial">Last initial</Label>
-              <Input id="last-initial" value={lastInitial} onChange={(event) => setLastInitial(event.target.value.slice(0, 1))} maxLength={1} autoCapitalize="characters" />
-              </div>
-            </div>
-            <Button type="submit" size="lg" className="mt-2 h-12 bg-[#00517e] text-white hover:bg-[#003f61]">
-              Enter logger
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </main>
-  );
+  const navigate = useNavigate(); const { isAuthenticated, isConfigured, signInWithPassword } = useAppData();
+  const [firstName, setFirstName] = useState(""); const [lastInitial, setLastInitial] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [mode, setMode] = useState<"signIn" | "signUp">("signIn"); const [error, setError] = useState("");
+  if (isAuthenticated) return <Navigate to="/logging" replace />;
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setError(""); if (isConfigured) { if (!email.trim() || password.length < 8 || (mode === "signUp" && !firstName.trim())) { setError("Enter a valid email and a password with at least 8 characters."); return; } try { await signInWithPassword({ email: email.trim(), password, flow: mode, name: `${firstName.trim()} ${lastInitial.trim().toUpperCase()}`.trim() }); void navigate("/logging"); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not sign in."); } return; } const name = `${firstName.trim()} ${lastInitial.trim().toUpperCase()}`.trim(); if (!firstName.trim() || !lastInitial.trim()) return; await signInWithPassword({ email: "", password: "", flow: "signUp", name }); void navigate("/logging"); }
+  return <main className="grid min-h-svh place-items-center bg-[#eaf4fb] px-6 py-10 text-[#002a44]"><Card className="w-full max-w-sm border-2 border-[#b6d8ed] bg-white shadow-[0_18px_50px_rgb(0_55_92/0.12)]"><CardHeader className="items-center gap-4 text-center"><img src="/team-341-logo.png" alt="Team 341 mascot" className="size-20 rounded-2xl object-contain" /><div className="space-y-1"><CardTitle className="text-2xl font-black tracking-tight">BATTERY LOGGER</CardTitle><p className="text-sm text-[#315979]">{isConfigured ? "Sign in to save your team data" : "Sign in to start logging"}</p></div></CardHeader><CardContent><form className="grid gap-5" onSubmit={submit}>{isConfigured ? <><div className="grid gap-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" autoFocus /></div><div className="grid gap-2"><Label htmlFor="password">Password</Label><Input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "signUp" ? "new-password" : "current-password"} /></div>{mode === "signUp" ? <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-4"><div className="grid gap-2"><Label htmlFor="first-name">Name</Label><Input id="first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} /></div><div className="grid gap-2"><Label htmlFor="last-initial">Initial</Label><Input id="last-initial" value={lastInitial} onChange={(event) => setLastInitial(event.target.value.slice(0, 1))} maxLength={1} /></div></div> : null}</> : <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-4"><div className="grid gap-2"><Label htmlFor="first-name">First name</Label><Input id="first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" autoFocus /></div><div className="grid gap-2"><Label htmlFor="last-initial">Last initial</Label><Input id="last-initial" value={lastInitial} onChange={(event) => setLastInitial(event.target.value.slice(0, 1))} maxLength={1} autoCapitalize="characters" /></div></div>}{error ? <p className="text-sm text-red-600">{error}</p> : null}<Button type="submit" size="lg" className="mt-2 h-12 bg-[#00517e] text-white hover:bg-[#003f61]">{isConfigured ? (mode === "signIn" ? "Sign in" : "Create account") : "Enter logger"}</Button>{isConfigured ? <button type="button" className="text-sm font-semibold text-[#00517e] underline" onClick={() => setMode((value) => value === "signIn" ? "signUp" : "signIn")}>{mode === "signIn" ? "Create a new account" : "Use an existing account"}</button> : null}</form></CardContent></Card></main>;
 }

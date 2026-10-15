@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { readLocalData, type LocalData, type LocalMatch, type LocalReading, writeLocalData } from "../lib/local-data";
+import { type LocalMatch, type LocalReading } from "../lib/local-data";
+import { useAppData } from "../lib/app-data";
 
 export function meta() { return [{ title: "History · Battery Logger" }]; }
 
@@ -36,19 +37,21 @@ function HistoryMetric({ label, value, delta, tone = "neutral" }: { label: strin
 }
 
 export default function History() {
-  const [data, setData] = useState<LocalData>(() => readLocalData());
+  const backend = useAppData(); const loadedData = backend.data;
+  if (!loadedData) return <main className="mx-auto max-w-3xl py-8 text-[#315979]">Loading match history…</main>;
+  const data = loadedData;
   const matches = data.batteries.flatMap((battery) => getHistoryEntries(data.readings.filter((reading) => reading.batteryId === battery.id)).map((entry) => ({ battery, entry }))).sort((a, b) => new Date(b.entry.post?.recordedAt ?? b.entry.pre.recordedAt).getTime() - new Date(a.entry.post?.recordedAt ?? a.entry.pre.recordedAt).getTime());
   function removeMatch(pre: LocalReading, post?: LocalReading) {
     const next = { ...data, readings: data.readings.filter((reading) => reading.id !== pre.id && reading.id !== post?.id) };
-    setData(next); writeLocalData(next); toast.success("Match removed from local history");
+    void backend.replaceData(next); toast.success("Match removed from history");
   }
   function editMatch(pre: LocalReading, post: LocalReading) {
     const next = { ...data, readings: data.readings.map((reading) => reading.id === pre.id ? pre : reading.id === post.id ? post : reading) };
-    setData(next); writeLocalData(next); toast.success("Match updated locally");
+    void backend.replaceData(next); toast.success("Match updated");
   }
   function editReading(reading: LocalReading) {
     const next = { ...data, readings: data.readings.map((item) => item.id === reading.id ? reading : item) };
-    setData(next); writeLocalData(next); toast.success("Reading updated locally");
+    void backend.replaceData(next); toast.success("Reading updated");
   }
   return <main className="mx-auto max-w-3xl py-8"><div className="mb-7 space-y-2"><h1 className="mt-0 text-3xl font-black tracking-tight text-[#002a44] dark:text-[#eef8ff] sm:text-4xl">Match history</h1><p className="text-[#315979] dark:text-[#a9c9df]">See how each battery changed from coming off the charger to going back on it.</p></div>{matches.length === 0 ? <Card><CardContent className="grid place-items-center gap-3 py-16 text-center text-sm text-[#315979] dark:text-[#b8d2df]"><BatteryCharging className="size-8 text-[#00517e] dark:text-[#65c6f7]" /><p>Completed matches will appear here after a pre-match and post-match reading are saved.</p></CardContent></Card> : <div className="space-y-4">{matches.map(({ battery, entry }) => <HistoryCard key={`${entry.pre.id}-${entry.post?.id ?? "pending"}`} batteryName={battery.name} entry={entry} onRemove={() => removeMatch(entry.pre, entry.post)} onEdit={editMatch} onEditReading={editReading} />)}</div>}</main>;
 }

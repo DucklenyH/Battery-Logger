@@ -1,12 +1,11 @@
 import { LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { useUiStore } from "../stores/ui-store";
+import { useAppData } from "../lib/app-data";
 
 export function PageHeader({ dark = false }: { dark?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
-  const displayName = useUiStore((state) => state.displayName);
-  const signOut = useUiStore((state) => state.signOut);
+  const { displayName, signOut } = useAppData();
   const textClass = dark ? "text-white" : "text-[#002a44] dark:text-[#f7fbfd]";
 
   return (
@@ -34,7 +33,7 @@ export function PageHeader({ dark = false }: { dark?: boolean }) {
             size="icon"
             className={dark ? "text-white hover:bg-white/10 hover:text-white" : "text-[#00517e] dark:text-[#f7fbfd]"}
             aria-label="Sign out"
-            onClick={signOut}
+            onClick={() => void signOut()}
           >
             <LogOut />
           </Button>
